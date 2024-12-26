@@ -8,5 +8,6 @@ import com.ecommerce.user_service.models.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
+    boolean existsByEmail(String email);
     Optional<User> findByResetPasswordToken(String token);
 }

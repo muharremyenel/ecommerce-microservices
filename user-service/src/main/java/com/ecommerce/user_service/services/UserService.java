@@ -1,6 +1,7 @@
 package com.ecommerce.user_service.services;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,6 +11,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.ecommerce.user_service.dto.UserRegistrationDTO;
+import com.ecommerce.user_service.dto.UserUpdateDTO;
+import com.ecommerce.user_service.exceptions.DuplicateResourceException;
+import com.ecommerce.user_service.exceptions.ResourceNotFoundException;
 import com.ecommerce.user_service.models.Role;
 import com.ecommerce.user_service.models.User;
 import com.ecommerce.user_service.repositories.RoleRepository;
@@ -51,7 +56,7 @@ public class UserService implements UserDetailsService {
             throw new RuntimeException("First name, last name, email, and password cannot be null");
         }
 
-        // E-posta kontrolü (aynı e-posta ile kayıt yapılmasını engellemek için)
+        // E-posta kontrol�� (aynı e-posta ile kayıt yapılmasını engellemek için)
         if (userRepository.findByEmail(userDetails.getEmail()).isPresent()) {
             throw new RuntimeException("Email is already registered");
         }
@@ -147,5 +152,39 @@ public class UserService implements UserDetailsService {
 
     public Optional<User> findByResetPasswordToken(String token) {
         return userRepository.findByResetPasswordToken(token);
+    }
+
+    public User registerUser(UserRegistrationDTO registrationDTO) {
+        if (userRepository.existsByEmail(registrationDTO.getEmail())) {
+            throw new DuplicateResourceException("Email already exists");
+        }
+
+        User user = new User();
+        user.setFirstName(registrationDTO.getFirstName());
+        user.setLastName(registrationDTO.getLastName());
+        user.setEmail(registrationDTO.getEmail());
+        user.setPassword(passwordEncoder.encode(registrationDTO.getPassword()));
+        user.setPhoneNumber(registrationDTO.getPhoneNumber());  // Yeni eklenen alan
+        
+        Role userRole = roleRepository.findByName("ROLE_USER")
+            .orElseThrow(() -> new ResourceNotFoundException("Default role not found"));
+        user.setRoles(Collections.singleton(userRole));
+
+        return userRepository.save(user);
+    }
+
+    public User updateUser(Long id, UserUpdateDTO updateDTO) {
+        User user = getUserById(id);
+        
+        user.setFirstName(updateDTO.getFirstName());
+        user.setLastName(updateDTO.getLastName());
+        user.setPhoneNumber(updateDTO.getPhoneNumber());  // Yeni eklenen alan
+        
+        return userRepository.save(user);
+    }
+
+    public User getUserById(Long id) {
+        return userRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
     }
 }

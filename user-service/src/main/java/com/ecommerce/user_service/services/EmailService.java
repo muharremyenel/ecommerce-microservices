@@ -1,8 +1,11 @@
 package com.ecommerce.user_service.services;
 
+import org.springframework.mail.MailAuthenticationException;
+import org.springframework.mail.MailSendException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -20,12 +23,14 @@ public class EmailService {
             message.setFrom("noreply@ecommerce.com");
             message.setTo(to);
             message.setSubject("Şifre Sıfırlama İsteği");
-            message.setText("Şifrenizi sıfırlamak için aşağıdaki linke tıklayın:\n\n" +
-                    "http://localhost:3000/reset-password?token=" + token);
+            message.setText("""
+                    Şifrenizi sıfırlamak için aşağıdaki linke tıklayın:
+
+                    http://localhost:3000/reset-password?token=%s""".formatted(token));
 
             mailSender.send(message);
             log.info("Şifre sıfırlama maili gönderildi: {}", to);
-        } catch (Exception e) {
+        } catch (MailSendException | MailAuthenticationException e) {
             log.error("Mail gönderimi başarısız: {}", to, e);
             throw new RuntimeException("Mail gönderilemedi");
         }

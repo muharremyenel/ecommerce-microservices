@@ -19,15 +19,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.user_service.dto.ChangePasswordDTO;
-import com.ecommerce.user_service.dto.UserRegistrationDTO;
-import com.ecommerce.user_service.dto.UserUpdateDTO;
 import com.ecommerce.user_service.dto.ForgotPasswordDTO;
 import com.ecommerce.user_service.dto.ResetPasswordDTO;
+import com.ecommerce.user_service.dto.UserRegistrationDTO;
+import com.ecommerce.user_service.dto.UserUpdateDTO;
 import com.ecommerce.user_service.models.Role;
 import com.ecommerce.user_service.models.User;
 import com.ecommerce.user_service.repositories.RoleRepository;
-import com.ecommerce.user_service.services.UserService;
 import com.ecommerce.user_service.services.EmailService;
+import com.ecommerce.user_service.services.UserService;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
@@ -54,7 +54,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    // 2. Mevcut kullanıcı bilgilerini getirme (Profile)
+    // 2. Mevcut kullanıc�� bilgilerini getirme (Profile)
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
         User user = userService.findByEmail(userDetails.getUsername())
@@ -80,6 +80,7 @@ public class UserController {
         user.setFirstName(registrationDTO.getFirstName());
         user.setLastName(registrationDTO.getLastName());
         user.setAddress(registrationDTO.getAddress());
+        user.setPhoneNumber(registrationDTO.getPhoneNumber());
         user.setCreatedAt(LocalDateTime.now());
 
         // Varsayılan USER rolünü ata
